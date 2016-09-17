@@ -86,7 +86,20 @@
     _publisher = [[OTPublisher alloc] initWithDelegate:self name:name];
     [_publisher setPublishAudio:bpubAudio];
     [_publisher setPublishVideo:bpubVideo];
-    [self.webView.superview addSubview:_publisher.view];
+    [self.webView.superview insertSubview:_publisher.view atIndex:0];
+
+
+
+    for (UIView *v in self.webView.superview.subviews) {
+        v.opaque = NO;
+        v.backgroundColor= [UIColor clearColor];
+        v.layer.opaque = NO;
+        v.layer.backgroundColor= (__bridge CGColorRef _Nullable)([UIColor clearColor]);
+
+    };
+
+
+
     [_publisher.view setFrame:CGRectMake(left, top, width, height)];
     if (zIndex>0) {
         _publisher.view.layer.zPosition = zIndex;
@@ -95,7 +108,7 @@
     if ([cameraPosition isEqualToString:@"back"]) {
         _publisher.cameraPosition = AVCaptureDevicePositionBack;
     }
-    
+
     // Return to Javascript
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -109,21 +122,36 @@
     int width = [[command.arguments objectAtIndex:3] intValue];
     int height = [[command.arguments objectAtIndex:4] intValue];
     int zIndex = [[command.arguments objectAtIndex:5] intValue];
+    NSLog(@"The top is: %d", top);
+    NSLog(@"The left is: %d", left);
+    NSLog(@"The width is: %d", width);
+    NSLog(@"The height is: %d", height);
+    NSLog(@"The zIndex is: %d", zIndex);
+
+    if(zIndex<0){
+        zIndex = 0;
+        NSLog(@"The reseted zIndex is: %d", zIndex);
+
+    }
+
     if ([sid isEqualToString:@"TBPublisher"]) {
         NSLog(@"The Width is: %d", width);
         _publisher.view.frame = CGRectMake(left, top, width, height);
         _publisher.view.layer.zPosition = zIndex;
     }
-    
+
+
+
     // Pulls the subscriber object from dictionary to prepare it for update
     OTSubscriber* streamInfo = [subscriberDictionary objectForKey:sid];
-    
+
+
     if (streamInfo) {
         // Reposition the video feeds!
         streamInfo.view.frame = CGRectMake(left, top, width, height);
         streamInfo.view.layer.zPosition = zIndex;
     }
-    
+
     CDVPluginResult* callbackResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [callbackResult setKeepCallbackAsBool:YES];
     //[self.commandDelegate sendPluginResult:callbackResult toSuccessCallbackString:command.callbackId];
@@ -152,7 +180,7 @@
 - (void)setCameraPosition:(CDVInvokedUrlCommand*)command{
     NSString* publishCameraPosition = [command.arguments objectAtIndex:0];
     NSLog(@"iOS Altering Video camera position, %@", publishCameraPosition);
-    
+
     if ([publishCameraPosition isEqualToString:@"back"]) {
         [_publisher setCameraPosition:AVCaptureDevicePositionBack];
     } else if ([publishCameraPosition isEqualToString:@"front"]) {
@@ -163,12 +191,12 @@
     NSLog(@"iOS Destroying Publisher");
     // Unpublish publisher
     [_session unpublish:_publisher error:nil];
-    
+
     // Remove publisher view
     if (_publisher) {
         [_publisher.view removeFromSuperview];
     }
-    
+
     // Return to Javascript
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -178,7 +206,7 @@
 #pragma mark Session Methods
 - (void)connect:(CDVInvokedUrlCommand *)command{
     NSLog(@"iOS Connecting to Session");
-    
+
     // Get Parameters
     NSString* tbToken = [command.arguments objectAtIndex:0];
     [_session connectWithToken:tbToken error:nil];
@@ -193,7 +221,7 @@
 - (void)publish:(CDVInvokedUrlCommand*)command{
     NSLog(@"iOS Publish stream to session");
     [_session publish:_publisher error:nil];
-    
+
     // Return to Javascript
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -208,22 +236,22 @@
 // Called by session.subscribe(streamId, top, left)
 - (void)subscribe:(CDVInvokedUrlCommand*)command{
     NSLog(@"iOS subscribing to stream");
-    
+
     // Get Parameters
     NSString* sid = [command.arguments objectAtIndex:0];
-    
-    
+
+
     int top = [[command.arguments objectAtIndex:1] intValue];
     int left = [[command.arguments objectAtIndex:2] intValue];
     int width = [[command.arguments objectAtIndex:3] intValue];
     int height = [[command.arguments objectAtIndex:4] intValue];
     int zIndex = [[command.arguments objectAtIndex:5] intValue];
-    
+
     // Acquire Stream, then create a subscriber object and put it into dictionary
     OTStream* myStream = [streamDictionary objectForKey:sid];
     OTSubscriber* sub = [[OTSubscriber alloc] initWithStream:myStream delegate:self];
     [_session subscribe:sub error:nil];
-    
+
     if ([[command.arguments objectAtIndex:6] isEqualToString:@"false"]) {
         [sub setSubscribeToAudio: NO];
     }
@@ -231,13 +259,24 @@
         [sub setSubscribeToVideo: NO];
     }
     [subscriberDictionary setObject:sub forKey:myStream.streamId];
-    
+
     [sub.view setFrame:CGRectMake(left, top, width, height)];
     if (zIndex>0) {
         sub.view.layer.zPosition = zIndex;
     }
-    [self.webView.superview addSubview:sub.view];
-    
+
+    // enforce transparency of every other view
+    for (UIView *v in self.webView.superview.subviews) {
+        v.opaque = NO;
+        v.backgroundColor= [UIColor clearColor];
+        v.layer.opaque = NO;
+        v.layer.backgroundColor= (__bridge CGColorRef _Nullable)([UIColor clearColor]);
+
+    };
+
+    //insert at the lowest level, this ensures placing behind other view with zIndex=0
+    [self.webView.superview insertSubview:sub.view atIndex:0];
+
     // Return to JS event handler
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -497,4 +536,3 @@
 
 
 @end
-
