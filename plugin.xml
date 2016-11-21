@@ -35,7 +35,7 @@
           <param name="android-package" value="com.tokbox.cordova.OpenTokAndroidPlugin"/>
         </feature>
       </config-file>
-      
+
     </platform>
 
     <!-- ios -->
@@ -79,6 +79,16 @@
       </config-file>
       <config-file target="config.xml" parent="/*">
         <access origin="*" />
+      </config-file>
+      <config-file target="*-Info.plist" parent="CFBundleURLTypes">
+        <array>
+            <dict>
+                <key>NSMicrophoneUsageDescription</key>
+                <string>Use VOIP for talking to your business partners</string>
+                <key>NSCameraUsageDescription</key>
+                <string>Video conferencing with your business partners</string>
+            </dict>
+        </array>
       </config-file>
     </platform>
 </plugin>
