@@ -80,15 +80,10 @@
       <config-file target="config.xml" parent="/*">
         <access origin="*" />
       </config-file>
-      <config-file target="*-Info.plist" parent="CFBundleURLTypes">
-        <array>
-            <dict>
-                <key>NSMicrophoneUsageDescription</key>
-                <string>Use VOIP for talking to your business partners</string>
-                <key>NSCameraUsageDescription</key>
-                <string>Video conferencing with your business partners</string>
-            </dict>
-        </array>
+      <config-file target="*-Info.plist" parent="NSMicrophoneUsageDescription">
+        <string>Use VOIP for talking to your business partners</string>
+      <config-file target="*-Info.plist" parent="NSCameraUsageDescription">
+        <string>Video conferencing with your business partners</string>
       </config-file>
     </platform>
 </plugin>
