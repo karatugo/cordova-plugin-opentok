@@ -82,6 +82,7 @@
       </config-file>
       <config-file target="*-Info.plist" parent="NSMicrophoneUsageDescription">
         <string>Use VOIP for talking to your business partners</string>
+      </config-file>
       <config-file target="*-Info.plist" parent="NSCameraUsageDescription">
         <string>Video conferencing with your business partners</string>
       </config-file>
